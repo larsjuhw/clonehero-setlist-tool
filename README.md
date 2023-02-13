@@ -35,7 +35,7 @@ The setlist files only contain MD5 hashes of the notes.chart/notes.mid files. Th
 
 To see the song and artist names when deleting and swapping songs, or printing the setlist, you will need to generate a songlist with [songlist_gen.py].
 
-```bash
+```
 python songlist_gen.py <output> <songs_directory_1> [songs_directory_2] ...
 ```
 

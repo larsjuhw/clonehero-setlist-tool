@@ -130,8 +130,7 @@ int parse_args(int argc, char *argv[], char **setlist_path, char **output_path,
 
 void usage()
 {
-    printf("Usage: %s (-s/--setlist) <path> [(-o/--output) path] "
-           "[(-S/--songlist) path]\n",
+    printf("Usage: %s -s <path> [-o output_path] [-S songlist_path]\n",
            PROGRAM_NAME);
 }
 
