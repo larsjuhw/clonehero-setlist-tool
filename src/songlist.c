@@ -71,35 +71,3 @@ Song *lookup_song(struct sc_map_sv *songlist_map, const char *hash)
     }
     return lookup;
 }
-
-// int main(int argc, char *argv[])
-// {
-//     printf("Success: %d\n", songlist_load("/home/lars/Documents/Coding/C/clonehero/songlist.bin"));
-
-//     printf("First 10 entries:\n");
-//     for (int i = 0; i < 10; i++)
-//     {
-//         printf("Entry %d:\n", i);
-//         printf("Title: %s\n", songlist[i].title);
-//         printf("Artist: %s\n", songlist[i].artist);
-//         printf("Hash: %s\n\n", songlist[i].hash);
-//     }
-//     char *test_lookup = "41BA52C1CEE4F51D53F72E8BD54DB2A8";
-//     while (1)
-//     {
-//         printf("Looking up hash %s\n", test_lookup);
-//         Song *lookup = lookup_song(test_lookup);
-//         if (lookup == NULL)
-//         {
-//             printf("Lookup failed\n");
-//         }
-//         else
-//         {
-//             printf("Lookup success\n");
-//             printf("Title: %s\n", lookup->title);
-//             printf("Artist: %s\n", lookup->artist);
-//             printf("Hash: %s\n", lookup->hash);
-//         }
-//     }
-//     return 0;
-// }

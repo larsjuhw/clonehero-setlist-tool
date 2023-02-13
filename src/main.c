@@ -137,14 +137,13 @@ void usage()
 
 void display_menu(char *setlist_path, char *songlist_path, char *output_path)
 {
-    const char *options[] = {"Show Setlist", "Remove Duplicates", "Shuffle",
-                             "Remove Song",  "Swap Songs",        "Save (s)",
-                             "Exit (q)"};
+    const char *options[] = {"Show Setlist", "Save (s)", "Exit (q)"};
 
     const int n_choices = sizeof(options) / sizeof(char *);
     int ch;
     int current = 0;
-    int largest_option = strlen(options[1]);
+    int largest_option = strlen(options[0]);
+    uint32_t duplicate_count = setlist_getDuplicateCount(setlist);
 
     initscr();
     clear();
@@ -162,15 +161,14 @@ void display_menu(char *setlist_path, char *songlist_path, char *output_path)
         attroff(A_STANDOUT);
 
         mvprintw(2, 0, "Setlist has %" PRIu32 " songs", setlist->count);
-        mvprintw(3, 0, "Setlist has %" PRIu32 " duplicates",
-                 setlist_getDuplicateCount(setlist));
+        mvprintw(3, 0, "Setlist has %" PRIu32 " duplicates", duplicate_count);
         if (songlist_path != NULL)
             mvprintw(4, 0, "Songlist has %" PRIu32 " songs",
                      songlist_map->size);
 
         for (int i = 0; i < n_choices; ++i)
         {
-            int row = i + 7;
+            int row = i + 6;
             int col = 2 + (largest_option - strlen(options[i])) / 2;
             if (i >= n_choices - 2)
                 row++;
@@ -201,34 +199,15 @@ void display_menu(char *setlist_path, char *songlist_path, char *output_path)
             if (current == 0)
             {
                 // list all songs in the setlist
-                list_songs(setlist_path);
+                list_songs(setlist_path, -1);
+                duplicate_count = setlist_getDuplicateCount(setlist);
             }
             else if (current == 1)
-            {
-                // remove duplicates from the setlist
-                remove_duplicates(n_choices);
-            }
-            else if (current == 2)
-            {
-                // shuffle the setlist
-                shuffle(n_choices);
-            }
-            else if (current == 3)
-            {
-                // remove a song from the setlist
-                remove_song(n_choices, setlist_path);
-            }
-            else if (current == 4)
-            {
-                // swap two songs in the setlist
-                swap_songs(n_choices, setlist_path);
-            }
-            else if (current == 5)
             {
                 // save the setlist
                 save(output_path, n_choices);
             }
-            else if (current == 6)
+            else if (current == 2)
             {
                 // exit
                 break;
@@ -252,6 +231,13 @@ void display_menu(char *setlist_path, char *songlist_path, char *output_path)
 
 void save(char *output_path, int n_choices)
 {
+    if (setlist->count == 0)
+    {
+        PRINTW_STATUSBAR(n_choices, "Setlist is empty. Saving aborted.");
+        getch();
+        return;
+    }
+
     if (output_is_setlist || file_exists(output_path))
     {
         if (output_is_setlist)
@@ -288,51 +274,31 @@ void save(char *output_path, int n_choices)
     getch();
 }
 
-int list_songs(char *setlist_path)
+int list_songs(char *setlist_path, int swap_index)
 {
-    const int list_size = 10;
+    int list_size = 10;
+    int setlist_changed = 1;
     int ch;
     int current = 0;
     int highest = 0;
     int n_choices = setlist->count;
+    int options_size = n_choices;
     int index_digits = nr_of_digits(n_choices);
-    char *options[n_choices];
-
-    for (int i = 0; i < n_choices; ++i)
-    {
-        SetlistEntry *current_entry = &(setlist->entries[i]);
-
-        char *hash_str = malloc(sizeof(char) * (current_entry->length + 1));
-        memcpy(hash_str, current_entry->hash, current_entry->length);
-        hash_str[current_entry->length] = '\0';
-
-        if (songlist_map != NULL)
-        {
-            Song *song = lookup_song(songlist_map, hash_str);
-
-            if (song != NULL)
-            {
-                char *name = song->title;
-                char *artist = song->artist;
-                char *option =
-                    malloc((strlen(name) + strlen(artist) + 4) * sizeof(char));
-                sprintf(option, "%s - %s", artist, name);
-                free(hash_str);
-                options[i] = option;
-            }
-            else
-            {
-                options[i] = hash_str;
-            }
-        }
-        else
-        {
-            options[i] = hash_str;
-        }
-    }
+    char *options[options_size];
 
     while (1)
     {
+        if (setlist_changed)
+        {
+            n_choices = setlist->count;
+            list_size = MIN(list_size, n_choices);
+            generate_options(setlist, songlist_map, options);
+            if (current >= n_choices)
+                current = n_choices - 1;
+            if (highest + list_size > n_choices)
+                highest = setlist->count - list_size;
+            setlist_changed = 0;
+        }
         clear();
 
         attron(A_STANDOUT);
@@ -345,8 +311,27 @@ int list_songs(char *setlist_path)
             int col = 2;
             if (current == i)
                 attron(A_REVERSE);
+            if (i == swap_index)
+                attron(A_BOLD);
             mvprintw(row, col, "[%0*d] %s", index_digits, i + 1, options[i]);
             attroff(A_REVERSE);
+            attroff(A_BOLD);
+        }
+        if (swap_index == -1)
+        {
+            PRINTW_STATUSBAR(
+                list_size - 5,
+                " [r] remove song | [s] swap song | [z] shuffle list | [d] "
+                "remove "
+                "duplicates\n Press [UP] and [DOWN] to scroll. Press "
+                "Press [q] to quit.");
+        }
+        else
+        {
+            PRINTW_STATUSBAR(
+                list_size - 5,
+                " Press [UP] and [DOWN] to scroll.\n"
+                " Press [q] to abort. Press [ENTER] to swap song.");
         }
 
         ch = getch();
@@ -375,13 +360,55 @@ int list_songs(char *setlist_path)
             break;
         }
 
+        if (swap_index == -1)
+        {
+            if (ch == 'r')
+            {
+                if (setlist_remove(setlist, current) == 0)
+                {
+                    setlist_changed = 1;
+                }
+            }
+            else if (ch == 's')
+            {
+                int swap_index = list_songs(setlist_path, current);
+                if (swap_index != -1)
+                {
+                    setlist_swap(setlist, current, swap_index);
+                    PRINTW_STATUSBAR(list_size - 5, "Swapped [%s] with [%s].",
+                                     options[current], options[swap_index]);
+                    setlist_changed = 1;
+                }
+                else
+                {
+                    PRINTW_STATUSBAR(list_size - 5, "Swap aborted.");
+                }
+                getch();
+            }
+            else if (ch == 'z')
+            {
+                PRINTW_STATUSBAR(list_size - 5, "Shuffling list...");
+                setlist_shuffle(setlist);
+                setlist_changed = 1;
+                PRINTW_STATUSBAR(list_size - 5, "List shuffled.");
+                getch();
+            }
+            else if (ch == 'd')
+            {
+                remove_duplicates(list_size - 5);
+                setlist_changed = 1;
+            }
+        }
         refresh();
     }
 
-    for (int i = 0; i < n_choices; ++i)
+    for (int i = 0; i < options_size; ++i)
     {
         free(options[i]);
     }
+
+    if (ch == 'q')
+        return -1;
 
     return current;
 }
@@ -396,8 +423,16 @@ void remove_duplicates(int n_choices)
     }
 
     PRINTW_STATUSBAR(n_choices, "Removing duplicates...");
-    setlist_removeDuplicates(setlist);
-    PRINTW_STATUSBAR(n_choices, "Removed %d duplicates.", setlist->count);
+    uint32_t old_count = setlist->count;
+    if (setlist_removeDuplicates(setlist) == 0)
+    {
+        PRINTW_STATUSBAR(n_choices, "Removed %d duplicates.",
+                         old_count - setlist->count);
+    }
+    else
+    {
+        PRINTW_STATUSBAR(n_choices, "Removing duplicates failed!");
+    }
     getch();
 }
 
@@ -413,7 +448,7 @@ void remove_song(int n_choices, char *setlist_path)
 {
     PRINTW_STATUSBAR(n_choices, "Select a song to remove");
     getch();
-    int index = list_songs(setlist_path);
+    int index = list_songs(setlist_path, 1);
 
     if (index == -1)
     {
@@ -433,8 +468,8 @@ void remove_song(int n_choices, char *setlist_path)
 
         if (song != NULL)
         {
-            PRINTW_STATUSBAR(n_choices, "Removing song %d: %s - %s..", index + 1,
-                             song->artist, song->title);
+            PRINTW_STATUSBAR(n_choices, "Removing song %d: %s - %s..",
+                             index + 1, song->artist, song->title);
             if (setlist_remove(setlist, index) == 0)
             {
                 PRINTW_STATUSBAR(n_choices, "Removed song %d: %s - %s.",
@@ -442,7 +477,8 @@ void remove_song(int n_choices, char *setlist_path)
             }
             else
             {
-                PRINTW_STATUSBAR(n_choices, "Failed to remove song %d: %s - %s.",
+                PRINTW_STATUSBAR(n_choices,
+                                 "Failed to remove song %d: %s - %s.",
                                  index + 1, song->artist, song->title);
             }
             getch();
@@ -454,9 +490,4 @@ void remove_song(int n_choices, char *setlist_path)
     setlist_remove(setlist, index);
     PRINTW_STATUSBAR(n_choices, "Removed song %d.", index + 1);
     getch();
-}
-
-void swap_songs(int n_choices, char *setlist_path)
-{
-
 }

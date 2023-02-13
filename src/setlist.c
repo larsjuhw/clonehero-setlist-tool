@@ -148,34 +148,15 @@ int setlist_remove(Setlist *setlist, int index)
     return 0;
 }
 
-// int main(void)
-// {
-//     if (setlist_load("/home/lars/.clonehero/Setlists/test3.setlist") != 0)
-//     {
-//         printf("Failed to load setlist\n");
-//     }
-//     else
-//     {
-//         printf("Setlist loaded\n");
-//     }
-//     printf("Setlist loaded with %d entries\n", setlist->count);
-//     printf("Setlist has %d duplicates\n", setlist_getDuplicateCount());
-//     // printf("Removing duplicates...\n");
-//     // setlist_removeDuplicates();
-//     // printf("Setlist has %d duplicates\n", setlist_getDuplicateCount());
-//     // printf("Setlist has %d entries\n", setlist->count);
-//     printf("Shuffling setlist...\n");
-//     setlist_shuffle();
-//     // printf("Removing entry 0...\n");
-//     // setlist_remove(0);
-//     printf("Setlist has %d entries\n", setlist->count);
-//     if (setlist_save("/home/lars/.clonehero/Setlists/test3.setlist") != 0)
-//     {
-//         printf("Failed to save setlist\n");
-//     }
-//     else
-//     {
-//         printf("Setlist saved\n");
-//     }
-//     return 0;
-// }
+void setlist_swap(Setlist *setlist, int index1, int index2)
+{
+    if (index1 < 0 || index1 >= setlist->count || index2 < 0 || index2 >= setlist->count)
+    {
+        fprintf(stderr, "Invalid swap index, exiting..");
+        exit(1);
+        return;
+    }
+    SetlistEntry temp = setlist->entries[index1];
+    setlist->entries[index1] = setlist->entries[index2];
+    setlist->entries[index2] = temp;
+}

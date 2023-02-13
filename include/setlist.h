@@ -23,6 +23,7 @@ int setlist_getDuplicateCount(Setlist *setlist);
 int setlist_removeDuplicates(Setlist *setlist);
 void setlist_shuffle(Setlist *setlist);
 int setlist_remove(Setlist *setlist, int index);
+void setlist_swap(Setlist *setlist, int index1, int index2);
 
 
 #endif // SETLIST_H
