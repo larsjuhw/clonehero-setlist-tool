@@ -5,7 +5,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#include "main.h"
+#include "sltool.h"
 #include "setlist.h"
 #include "songlist.h"
 #include "utils.h"
@@ -130,8 +130,8 @@ int parse_args(int argc, char *argv[], char **setlist_path, char **output_path,
 
 void usage()
 {
-    printf("Usage: %s (-s/--setlist) <path> (-o/--output) [path] "
-           "(-S/--songlist) [path]\n",
+    printf("Usage: %s (-s/--setlist) <path> [(-o/--output) path] "
+           "[(-S/--songlist) path]\n",
            PROGRAM_NAME);
 }
 
@@ -433,61 +433,5 @@ void remove_duplicates(int n_choices)
     {
         PRINTW_STATUSBAR(n_choices, "Removing duplicates failed!");
     }
-    getch();
-}
-
-void shuffle(int n_choices)
-{
-    PRINTW_STATUSBAR(n_choices, "Shuffling setlist...");
-    setlist_shuffle(setlist);
-    PRINTW_STATUSBAR(n_choices, "Setlist shuffled.");
-    getch();
-}
-
-void remove_song(int n_choices, char *setlist_path)
-{
-    PRINTW_STATUSBAR(n_choices, "Select a song to remove");
-    getch();
-    int index = list_songs(setlist_path, 1);
-
-    if (index == -1)
-    {
-        PRINTW_STATUSBAR(n_choices, "Removing song aborted.");
-        getch();
-        return;
-    }
-
-    if (songlist_map != NULL)
-    {
-        SetlistEntry *current_entry = &(setlist->entries[index]);
-        char *hash_str = malloc(sizeof(char) * (current_entry->length + 1));
-        memcpy(hash_str, current_entry->hash, current_entry->length);
-        hash_str[current_entry->length] = '\0';
-        Song *song = lookup_song(songlist_map, hash_str);
-        free(hash_str);
-
-        if (song != NULL)
-        {
-            PRINTW_STATUSBAR(n_choices, "Removing song %d: %s - %s..",
-                             index + 1, song->artist, song->title);
-            if (setlist_remove(setlist, index) == 0)
-            {
-                PRINTW_STATUSBAR(n_choices, "Removed song %d: %s - %s.",
-                                 index + 1, song->artist, song->title);
-            }
-            else
-            {
-                PRINTW_STATUSBAR(n_choices,
-                                 "Failed to remove song %d: %s - %s.",
-                                 index + 1, song->artist, song->title);
-            }
-            getch();
-            return;
-        }
-    }
-
-    PRINTW_STATUSBAR(n_choices, "Removing song %d..", index + 1);
-    setlist_remove(setlist, index);
-    PRINTW_STATUSBAR(n_choices, "Removed song %d.", index + 1);
     getch();
 }

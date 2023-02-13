@@ -2,3 +2,7 @@
 testdata
 *.exe
 test
+build
+sltool
+*.bin
+*.setlist
