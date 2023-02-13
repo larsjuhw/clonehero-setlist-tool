@@ -1,21 +1,10 @@
-#ifndef CLONEHERO_H
-#define CLONEHERO_H
-
-void printMenu();
-char getInput();
-void analysis();
-void removeSong();
-void shufflePlaylist();
-void swapSongs();
-void removeDuplicates();
-void saveSetlist();
-void listSongs();
-int loadSonglist();
-void handleInput(char input);
-void printUsage();
-
-const unsigned char HEADER[] = {0xEA, 0xEC, 0x33, 0x01};
-const unsigned char SUFFIX[] = {0x64, 0x00};
-const unsigned char PREFIX = 0x20;
-
-#endif // CLONEHERO_H
+int main(int argc, char *argv[]);
+int parse_args(int argc, char *argv[], char **setlist_path, char **output_path, char **songlist_path);
+void usage();
+void display_menu(char *setlist_path, char *songlist_path, char *output_path);
+void save(char *output_path, int n_choices);
+int list_songs(char *setlist_path);
+void remove_duplicates(int n_choices);
+void shuffle(int n_choices);
+void remove_song(int n_choices, char *setlist_path);
+void swap_songs(int n_choices, char *setlist_path);

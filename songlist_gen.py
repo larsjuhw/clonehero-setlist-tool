@@ -3,6 +3,7 @@ import configparser
 from pathlib import Path
 import hashlib
 import itertools
+import struct
 
 def main():
     if len(sys.argv) < 3:
@@ -38,10 +39,17 @@ def main():
                 md5 = hashlib.md5(notes.open('rb').read()).hexdigest().upper()
                 song_list.append((song_name, artist_name, md5))
     
-    with out_path.open('w') as f:
-        f.write(f"{len(song_list)}\n")
+    with out_path.open('wb') as f:
+        f.write(struct.pack("I", len(song_list)))
+
         for song_name, artist_name, md5 in song_list:
-            f.write(f"{song_name}\n{artist_name}\n{md5}\n")
+            f.write(struct.pack("I", len(song_name.encode('utf-8'))))
+            f.write(struct.pack("I", len(artist_name.encode('utf-8'))))
+            f.write(struct.pack("I", len(md5.encode('utf-8'))))
+
+            f.write(song_name.encode('utf-8'))
+            f.write(artist_name.encode('utf-8'))
+            f.write(md5.encode('utf-8'))
 
     
 
