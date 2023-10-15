@@ -1,10 +1,10 @@
 # CloneHero Setlist Tool
 
-_Currently Linux only!_
-
 This tool can edit CloneHero setlist files, allowing you to have large setlists while still being able to easily edit them.
 
 CloneHero's built-in editing of setlists is limited to appending a song to the end of the list and removing the last song of the list, which is not very useful for large setlists. When you have 1000+ songs in CloneHero it is nice to have a setlist with your favourite songs.
+
+Supports Linux and Windows. The Windows version has not been tested thoroughly but should work.
 
 ## Functions
 
@@ -14,10 +14,6 @@ This tool provides the following functions:
 * Song swap: Swap the positions of two songs
 * Shuffle: Shuffle all the songs in the setlist
 * Duplicate removal: Removes all duplicates in the setlist
-
-## Compiling
-
-The code can be compiled by running `make`. The compiled binary is named `sltool`.
 
 ## Usage
 
@@ -38,6 +34,12 @@ To see the song and artist names when deleting and swapping songs, or printing t
 ```
 python songlist_gen.py <output> <songs_directory_1> [songs_directory_2] ...
 ```
+
+## Compiling
+
+The code can be compiled by running `make`. Use MinGW to compile for Windows.
+
+Requires libncurses.
 
 ## Note
 

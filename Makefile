@@ -1,25 +1,40 @@
-BULIDDIR=build
+# Directories
+BUILD_DIR := build
 
-sltool: $(BULIDDIR)/sltool.o $(BULIDDIR)/setlist.o $(BULIDDIR)/sltool.o $(BULIDDIR)/songlist.o $(BULIDDIR)/utils.o $(BULIDDIR)/sc_map.o
-	cc $(BULIDDIR)/setlist.o $(BULIDDIR)/sltool.o $(BULIDDIR)/songlist.o $(BULIDDIR)/utils.o $(BULIDDIR)/sc_map.o -o sltool -lncurses
+# Compiler and flags
+CC := gcc  # Use `gcc` explicitly for MinGW
+CFLAGS := -Wall -Wextra
+CPPFLAGS := -I include -I lib/sc_map
+LDFLAGS := -lncurses
 
-$(BULIDDIR)/sltool.o : src/sltool.c | $(BULIDDIR)
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@ -I include -I lib/sc_map
+# Source files
+SRCS := src/sltool.c src/setlist.c src/songlist.c src/utils.c lib/sc_map/sc_map.c
+OBJS := $(patsubst src/%.c, $(BUILD_DIR)/%.o, $(SRCS))
 
-$(BULIDDIR)/setlist.o: src/setlist.c | $(BULIDDIR)
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@ -I include -I lib/sc_map
+# Executable
+EXECUTABLE := sltool
 
-$(BULIDDIR)/songlist.o: src/songlist.c | $(BULIDDIR)
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@ -I include -I lib/sc_map
+# Determine the platform
+ifeq ($(OS),Windows_NT)
+    # If the OS is Windows, add the path to MinGW ncurses include directory
+    CPPFLAGS += -I/mingw64/include/ncurses
+    # Add the -DNCURSES_STATIC flag
+    CFLAGS += -DNCURSES_STATIC
+endif
 
-$(BULIDDIR)/utils.o: src/utils.c | $(BULIDDIR)
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@ -I include -I lib/sc_map
+# Targets
+.PHONY: all clean
 
-$(BULIDDIR)/sc_map.o: lib/sc_map/sc_map.c | $(BULIDDIR)
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@ -I lib/sc_map
+all: $(BUILD_DIR) $(EXECUTABLE)
 
-$(BULIDDIR):
-	mkdir $(BULIDDIR)
+$(EXECUTABLE): $(OBJS)
+	$(CC) $^ -o $@ $(LDFLAGS)
+
+$(BUILD_DIR)/%.o: src/%.c | $(BUILD_DIR)
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+
+$(BUILD_DIR):
+	mkdir -p $@
 
 clean:
-	rm $(BULIDDIR)/* sltool
+	rm -rf $(BUILD_DIR) $(EXECUTABLE)

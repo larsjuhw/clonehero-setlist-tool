@@ -12,6 +12,10 @@
 
 #define PROGRAM_NAME "sltool"
 
+#ifdef WIN32
+    #define realpath(N,R) _fullpath((R),(N),PATH_MAX)
+#endif
+
 #define PRINTW_STATUSBAR(n_choices, ...)                                       \
     clear_lines(n_choices + 9, n_choices + 12);                                \
     attron(A_BOLD);                                                            \
