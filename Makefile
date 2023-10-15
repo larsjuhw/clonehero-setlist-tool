@@ -20,6 +20,8 @@ ifeq ($(OS),Windows_NT)
     CPPFLAGS += -I/mingw64/include/ncurses
     # Add the -DNCURSES_STATIC flag
     CFLAGS += -DNCURSES_STATIC
+	# Add the -static flag
+	LDFLAGS += -static
 endif
 
 # Targets
