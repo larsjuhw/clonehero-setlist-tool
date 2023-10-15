@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     if (*songlist_path != NULL)
     {
         songlist_map = malloc(sizeof(struct sc_map_sv));
-        if (songlist_load(songlist_map, *songlist_path) == -1)
+        if (songlist_load(songlist_map, *songlist_path) < 0)
         {
             printf("Failed to load songlist\n");
             return -1;
