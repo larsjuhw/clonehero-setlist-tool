@@ -23,7 +23,11 @@ sltool -s <path> [-o output_path] [-S songlist_path]
 
 If no output path is provided, the setlist file will be overwritten. I do not recommend overwriting files. An error in the code can theoretically cause your setlist to become unreadable, although I have not encountered such bugs myself.
 
- Providing a songlist file is not required, but will allow you to see the song and artist names when using the tool.
+Providing a songlist file is not required, but will allow you to see the song and artist names when using the tool.
+
+**Example of a setlist being shuffled and saved to a new file**
+
+https://github.com/larsjuhw/clonehero-setlist-tool/assets/39745476/f84aec72-986c-4fd9-b535-a506387ec82d
 
 ## Songlist File
 
